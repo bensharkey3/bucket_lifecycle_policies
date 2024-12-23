@@ -1,4 +1,4 @@
-name: Deploy implement_tagging_and_lcp
+name: Validate implement_tagging_and_lcp
 
 on:
   push:
