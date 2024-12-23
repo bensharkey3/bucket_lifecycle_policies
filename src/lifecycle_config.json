@@ -1,4 +1,16 @@
 {
+    "PIandNonPI_PRD_TempFiles_IntermediateTerm1": {
+        "Rules": [
+            {
+                "ID": "s3_lcp_PIandNonPI_PRD_TempFiles_IntermediateTerm1",
+                "Filter": {"Prefix": ""},
+                "Status": "Enabled",
+                "Expiration": {
+                    "Days": 90
+                }
+            }
+        ]
+    },
     "PIandNonPI_DEV_SourceSystemFiles_ShortTerm": {
         "Rules": [
             {

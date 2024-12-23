@@ -1,4 +1,16 @@
 {
+	"aws-athena-query-results-us-east-1-537808241319": {
+		"Environment": "PRD",
+		"FileType": "TempFiles",
+		"Classification": "PIandNonPI",
+		"RetentionCategory": "IntermediateTerm1"
+	},
+	"aws-athena-query-results-ap-southeast-2-537808241319": {
+		"Environment": "DEV",
+		"FileType": "SourceSystemFiles",
+		"Classification": "PIandNonPI",
+		"RetentionCategory": "ShortTerm"
+	},
 	"afl-snowflake-sfmc-dev": {
 		"Environment": "DEV",
 		"FileType": "SourceSystemFiles",
