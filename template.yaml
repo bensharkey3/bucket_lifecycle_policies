@@ -15,7 +15,7 @@ Resources:
       Description: ''
       MemorySize: 128
       Timeout: 600
-      Handler: lambda_function.lambda_handler
+      Handler: implement_tagging_and_lcp.lambda_handler
       Runtime: python3.12
       Architectures:
         - x86_64
