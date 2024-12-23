@@ -54,6 +54,6 @@ Resources:
         Schedule1:
           Type: Schedule
           Properties:
-            Schedule: cron(0 21 ? 10-3 MON-FRI *)
+            Schedule: cron(0 21 ? 10-3 FRI *)
       RuntimeManagementConfig:
         UpdateRuntimeOn: Auto
