@@ -1,0 +1,38 @@
+name: Deploy implement_tagging_and_lcp
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Configure AWS credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::537808241319:role/github-actions-implement-tagging-and-lcp
+          aws-region: ap-southeast-2
+
+      # Install AWS SAM CLI
+      - name: Install AWS SAM CLI
+        run: pip install aws-sam-cli
+
+      # Build the SAM application
+      - name: Build SAM application
+        run: sam build
+
+      # Deploy the SAM application
+      - name: Deploy SAM application
+        run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --capabilities CAPABILITY_IAM
