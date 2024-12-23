@@ -224,5 +224,9 @@ def main():
     # write_buckets_missing_tags_to_file_in_s3(s3_client, buckets_missing_tags)
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
+#     main()
+
+
+def lambda_handler(event, context):
     main()
