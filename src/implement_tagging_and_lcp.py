@@ -168,43 +168,43 @@ def assign_lifecycle_policies(s3_client, config_file) -> None:
         print(f"Error listing buckets: {e}")
 
 
-def get_buckets_missing_tags(s3_client) -> list:
-    """returns a list of bucket names that are missing one or more lifecycle policy tags
-    """
-    print('running func: get_buckets_missing_tags')
-    required_tags = {"Environment", "FileType", "Classification", "RetentionCategory"}
-    buckets_missing_tags = []
+# def get_buckets_missing_tags(s3_client) -> list:
+#     """returns a list of bucket names that are missing one or more lifecycle policy tags
+#     """
+#     print('running func: get_buckets_missing_tags')
+#     required_tags = {"Environment", "FileType", "Classification", "RetentionCategory"}
+#     buckets_missing_tags = []
 
-    # Get the list of buckets
-    response = s3_client.list_buckets()
-    bucket_list = [bucket['Name'] for bucket in response.get('Buckets', [])]
+#     # Get the list of buckets
+#     response = s3_client.list_buckets()
+#     bucket_list = [bucket['Name'] for bucket in response.get('Buckets', [])]
 
-    for bucket in bucket_list:
-        try:
-            tag_response = s3_client.get_bucket_tagging(Bucket=bucket)
-            tags = {tag['Key']: tag['Value'] for tag in tag_response.get('TagSet', [])}
-        except s3_client.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == 'NoSuchTagSet':
-                tags = {}
-            else:
-                raise
+#     for bucket in bucket_list:
+#         try:
+#             tag_response = s3_client.get_bucket_tagging(Bucket=bucket)
+#             tags = {tag['Key']: tag['Value'] for tag in tag_response.get('TagSet', [])}
+#         except s3_client.exceptions.ClientError as e:
+#             if e.response['Error']['Code'] == 'NoSuchTagSet':
+#                 tags = {}
+#             else:
+#                 raise
 
-        if not required_tags.issubset(tags.keys()):
-            buckets_missing_tags.append(bucket)
-    return buckets_missing_tags
+#         if not required_tags.issubset(tags.keys()):
+#             buckets_missing_tags.append(bucket)
+#     return buckets_missing_tags
 
 
-def write_buckets_missing_tags_to_file_in_s3(s3_client, buckets_missing_tags) -> None:
-    """writes a file to s3 containing the list of buckets that dont have tags
-    """
-    print('running func: write_buckets_missing_tags_to_file_in_s3')
-    bucket_name = 'afl-data-analytics-aws-logs'
-    data_str = '\n'.join(buckets_missing_tags)
-    timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    filename = f'buckets_without_lifecycle_tags/bucket_list_{timestamp}.txt'
+# def write_buckets_missing_tags_to_file_in_s3(s3_client, buckets_missing_tags) -> None:
+#     """writes a file to s3 containing the list of buckets that dont have tags
+#     """
+#     print('running func: write_buckets_missing_tags_to_file_in_s3')
+#     bucket_name = 'afl-data-analytics-aws-logs'
+#     data_str = '\n'.join(buckets_missing_tags)
+#     timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+#     filename = f'buckets_without_lifecycle_tags/bucket_list_{timestamp}.txt'
 
-    # upload file to s3
-    s3_client.put_object(Bucket=bucket_name, Key=filename, Body=data_str)
+#     # upload file to s3
+#     s3_client.put_object(Bucket=bucket_name, Key=filename, Body=data_str)
 
 
 def main():
@@ -220,8 +220,8 @@ def main():
     lifecycle_config_file = os.path.join(os.path.dirname(__file__), 'lifecycle_config.json')
     assign_lifecycle_policies(s3_client, lifecycle_config_file)
 
-    buckets_missing_tags = get_buckets_missing_tags(s3_client)
-    write_buckets_missing_tags_to_file_in_s3(s3_client, buckets_missing_tags)
+    # buckets_missing_tags = get_buckets_missing_tags(s3_client)
+    # write_buckets_missing_tags_to_file_in_s3(s3_client, buckets_missing_tags)
 
 
 if __name__ == '__main__':
