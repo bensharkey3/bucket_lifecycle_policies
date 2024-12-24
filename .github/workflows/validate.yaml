@@ -1,12 +1,15 @@
-name: Deploy implement_tagging_and_lcp
+name: Validate implement_tagging_and_lcp
 
 on:
   push:
-    branches:
+    branches-ignore:
+      - main
+  pull_request:
+    branches-ignore:
       - main
 
 jobs:
-  deploy:
+  validate:
     runs-on: ubuntu-latest
 
     permissions:
@@ -34,5 +37,15 @@ jobs:
       - name: Build SAM application
         run: sam build
 
-      - name: Deploy SAM application
-        run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --capabilities CAPABILITY_IAM
+      - name: Validate JSON files
+        run: |
+          for file in $(find . -name '*.json'); do
+            echo pwd
+            echo "Validating $file"
+            python -m json.tool $file
+          done
+
+      - name: Validate SAM template
+        run: |
+          echo "Validating template.yaml"
+          sam validate --template-file template.yaml
