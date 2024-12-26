@@ -1,40 +1,39 @@
 import boto3
 from botocore.exceptions import ClientError
 import json
-import datetime
 import os
 
 
 def create_s3_client() -> boto3.client:
-    """creates s3 client with mfa taken
-    """
+    """creates s3 client with mfa taken"""
     if os.environ.get("AWS_EXECUTION_ENV") is not None:
         s3_client = boto3.client("s3")
         return s3_client
 
     else:
         session = boto3.Session()
-        mfa_serial = session._session.full_config['profiles']['default']['mfa_serial']
-        mfa_token = input('Please enter your 6 digit MFA code:')
+        mfa_serial = session._session.full_config["profiles"]["default"]["mfa_serial"]
+        mfa_token = input("Please enter your 6 digit MFA code:")
 
-        sts = session.client('sts')
-        MFA_validated_token = sts.get_session_token(SerialNumber=mfa_serial, TokenCode=mfa_token)
+        sts = session.client("sts")
+        MFA_validated_token = sts.get_session_token(
+            SerialNumber=mfa_serial, TokenCode=mfa_token
+        )
 
         s3_client = boto3.client(
             "s3",
-            aws_session_token=MFA_validated_token['Credentials']['SessionToken'],
-            aws_secret_access_key=MFA_validated_token['Credentials']['SecretAccessKey'],
-            aws_access_key_id=MFA_validated_token['Credentials']['AccessKeyId']
+            aws_session_token=MFA_validated_token["Credentials"]["SessionToken"],
+            aws_secret_access_key=MFA_validated_token["Credentials"]["SecretAccessKey"],
+            aws_access_key_id=MFA_validated_token["Credentials"]["AccessKeyId"],
         )
         return s3_client
 
 
 def load_tags_from_config(config_file) -> dict:
-    """loads tags for multiple buckets from bucket_tags_config.json and loads the tags as a dict
-    """
-    with open(config_file, 'r') as file:
+    """loads tags for multiple buckets from bucket_tags_config.json and loads the tags as a dict"""
+    with open(config_file, "r") as file:
         config_data = json.load(file)
-    
+
     bucket_tags = {}
     for bucket_name, tags in config_data.items():
         bucket_tags[bucket_name] = [
@@ -44,8 +43,7 @@ def load_tags_from_config(config_file) -> dict:
 
 
 def apply_bucket_tags(s3_client, bucket_name, tags) -> None:
-    """apply tags to all buckets in bucket_tags_config.json file. will remove all existing tags
-    """
+    """apply tags to all buckets in bucket_tags_config.json file. will remove all existing tags"""
     try:
         tag_set = {"TagSet": tags}
         s3_client.put_bucket_tagging(Bucket=bucket_name, Tagging=tag_set)
@@ -55,9 +53,13 @@ def apply_bucket_tags(s3_client, bucket_name, tags) -> None:
 
 
 def create_lifecycle_policy_tag(s3_client) -> None:
-    """create a lifecycle policy tag based on the concat of other tags, will replac eif already exists
-    """
-    allowed_tag_keys = {"Environment", "FileType", "Classification", "RetentionCategory"}
+    """create a lifecycle policy tag based on the concat of other tags, will replac eif already exists"""
+    allowed_tag_keys = {
+        "Environment",
+        "FileType",
+        "Classification",
+        "RetentionCategory",
+    }
 
     try:
         # list all buckets
@@ -74,7 +76,9 @@ def create_lifecycle_policy_tag(s3_client) -> None:
                 tag_set = tags_response.get("TagSet", [])
 
                 # filter tags based on allowed keys
-                filtered_tags = [tag for tag in tag_set if tag["Key"] in allowed_tag_keys]
+                filtered_tags = [
+                    tag for tag in tag_set if tag["Key"] in allowed_tag_keys
+                ]
 
                 # skip if there are no filtered tags
                 if not filtered_tags:
@@ -94,7 +98,9 @@ def create_lifecycle_policy_tag(s3_client) -> None:
                 ] + [{"Key": "LifecyclePolicyConfig", "Value": concatenated_value}]
 
                 # apply updated tag to the bucket
-                s3_client.put_bucket_tagging(Bucket=bucket_name, Tagging={"TagSet": updated_tags})
+                s3_client.put_bucket_tagging(
+                    Bucket=bucket_name, Tagging={"TagSet": updated_tags}
+                )
                 print(f"Updated tags applied to bucket {bucket_name}")
 
             except ClientError as e:
@@ -108,19 +114,16 @@ def create_lifecycle_policy_tag(s3_client) -> None:
 
 
 def load_lifecycle_configs(config_file) -> dict:
-    """loads lifecycle configurations from json file, used within the assign_lifecycle_policies function 
-    """
-    with open(config_file, 'r') as file:
+    """loads lifecycle configurations from json file, used within the assign_lifecycle_policies function"""
+    with open(config_file, "r") as file:
         return json.load(file)
 
 
 def apply_lifecycle_policy(s3_client, bucket_name, lifecycle_config) -> None:
-    """applies a lifecycle configuration to a bucket, used within the assign_lifecycle_policies function 
-    """
+    """applies a lifecycle configuration to a bucket, used within the assign_lifecycle_policies function"""
     try:
         s3_client.put_bucket_lifecycle_configuration(
-            Bucket=bucket_name,
-            LifecycleConfiguration=lifecycle_config
+            Bucket=bucket_name, LifecycleConfiguration=lifecycle_config
         )
         print(f"Lifecycle policy applied to bucket: {bucket_name}")
     except ClientError as e:
@@ -128,8 +131,7 @@ def apply_lifecycle_policy(s3_client, bucket_name, lifecycle_config) -> None:
 
 
 def assign_lifecycle_policies(s3_client, config_file) -> None:
-    """assign lifecycle policies to buckets based on the LifecyclePolicyConfig tag
-    """
+    """assign lifecycle policies to buckets based on the LifecyclePolicyConfig tag"""
     lifecycle_configs = load_lifecycle_configs(config_file)
 
     try:
@@ -147,8 +149,12 @@ def assign_lifecycle_policies(s3_client, config_file) -> None:
 
                 # find the LifecyclePolicyConfig tag
                 policy_tag = next(
-                    (tag["Value"] for tag in tag_set if tag["Key"] == "LifecyclePolicyConfig"),
-                    None
+                    (
+                        tag["Value"]
+                        for tag in tag_set
+                        if tag["Key"] == "LifecyclePolicyConfig"
+                    ),
+                    None,
                 )
 
                 # if tag matches a lifecycle config in json file, apply the lifecycle configuration
@@ -210,14 +216,18 @@ def assign_lifecycle_policies(s3_client, config_file) -> None:
 def main():
     s3_client = create_s3_client()
 
-    bucket_tags_config_file = os.path.join(os.path.dirname(__file__), 'bucket_tags_config.json')
-    bucket_tags = load_tags_from_config(config_file = bucket_tags_config_file)
+    bucket_tags_config_file = os.path.join(
+        os.path.dirname(__file__), "bucket_tags_config.json"
+    )
+    bucket_tags = load_tags_from_config(config_file=bucket_tags_config_file)
     for bucket_name, tags in bucket_tags.items():
         apply_bucket_tags(s3_client, bucket_name, tags)
 
     create_lifecycle_policy_tag(s3_client)
 
-    lifecycle_config_file = os.path.join(os.path.dirname(__file__), 'lifecycle_config.json')
+    lifecycle_config_file = os.path.join(
+        os.path.dirname(__file__), "lifecycle_config.json"
+    )
     assign_lifecycle_policies(s3_client, lifecycle_config_file)
 
     # buckets_missing_tags = get_buckets_missing_tags(s3_client)
