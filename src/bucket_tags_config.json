@@ -4,7 +4,7 @@
 		"FileType": "TempFiles",
 		"Classification": "PIandNonPI",
 		"RetentionCategory": "IntermediateTerm1"
-	},
+	,
 	"aws-athena-query-results-ap-southeast-2-537808241319": {
 		"Environment": "DEV",
 		"FileType": "SourceSystemFiles",
