@@ -1,15 +1,15 @@
-name: Validate implement_tagging_and_lcp
+name: CI Checks
 
 on:
   push:
-    branches-ignore:
-      - main
+    branches:
+      - "**"
   pull_request:
-    branches-ignore:
-      - main
+    branches:
+      - "**"
 
 jobs:
-  validate:
+  ci-checks:
     runs-on: ubuntu-latest
 
     permissions:
@@ -40,12 +40,23 @@ jobs:
       - name: Validate JSON files
         run: |
           for file in $(find . -name '*.json'); do
-            echo pwd
-            echo "Validating $file"
+            echo "Validating json file $file"
             python -m json.tool $file
           done
 
+      - name: Validate YAML files
+        run: |
+          echo "Validating yaml file"
+          pip install yamllint
+          yamllint --config-data "{extends: default, rules: {line-length: disable, document-start: disable}}" template.yaml
+
       - name: Validate SAM template
         run: |
-          echo "Validating template.yaml"
+          echo "Validating SAM template"
           sam validate --template-file template.yaml
+
+      - name: Lint Python files
+        run: |
+          echo "Linting Python files"
+          pip install ruff
+          ruff check src/*.py
