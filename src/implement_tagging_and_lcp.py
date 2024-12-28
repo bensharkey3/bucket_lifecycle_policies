@@ -204,7 +204,7 @@ def assign_lifecycle_policies(s3_client, config_file) -> None:
 #     """writes a file to s3 containing the list of buckets that dont have tags
 #     """
 #     print('running func: write_buckets_missing_tags_to_file_in_s3')
-#     bucket_name = 'afl-data-analytics-aws-logs'
+
 #     data_str = '\n'.join(buckets_missing_tags)
 #     timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 #     filename = f'buckets_without_lifecycle_tags/bucket_list_{timestamp}.txt'
