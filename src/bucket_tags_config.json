@@ -11,28 +11,10 @@
 		"Classification": "PIandNonPI",
 		"RetentionCategory": "ShortTerm"
 	},
-	"afl-snowflake-sfmc-dev": {
-		"Environment": "DEV",
-		"FileType": "SourceSystemFiles",
-		"Classification": "PIandNonPI",
-		"RetentionCategory": "ShortTerm"
-	},
-    "afl-snowflake-champion-upload-dev": {
-		"Environment": "DEV",
-		"FileType": "SourceSystemFiles",
-		"Classification": "PIandNonPI",
-		"RetentionCategory": "ShortTerm"
-    },
-    "afl-data-analytics-bunker-dev": {
+	"aws-query-result-ouputs": {
 		"Environment": "DEV",
 		"FileType": "Adhoc",
 		"Classification": "PIandNonPI",
 		"RetentionCategory": "IntermediateTerm1"
-    },
-    "afl-snowflake-officialshq-dev": {
-		"Environment": "DEV",
-		"FileType": "SourceSystemFiles",
-		"Classification": "PIandNonPI",
-		"RetentionCategory": "ShortTerm"
-    }
+	}
 }
