@@ -55,11 +55,6 @@ jobs:
           echo "Validating SAM template"
           sam validate --template-file template.yaml
 
-      - name: Validate Cloudformation template
-        run: |
-          echo "Validating Cloudformation template"
-          aws cloudformation validate-template
-
       - name: Lint Python files
         run: |
           echo "Linting Python files"
