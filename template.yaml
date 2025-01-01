@@ -57,7 +57,7 @@ Resources:
       ScheduleExpression: "cron(0 21 ? 10-3 FRI *)"
       State: ENABLED
       Targets:
-        - Arn: !GetAtt StepFunction.Arn
+        - Arn: !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:StepFunction"
           Id: StepFunctionTarget
 
   # Step Function Execution Role
@@ -89,7 +89,7 @@ Resources:
               - Effect: "Allow"
                 Action:
                   - "states:StartExecution"
-                Resource: !GetAtt StepFunction.Arn
+                Resource: !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:StepFunction"
 
   # Lambda Execution Role
   LambdaExecutionRole:
