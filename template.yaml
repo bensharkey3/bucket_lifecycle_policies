@@ -48,7 +48,7 @@ Resources:
                 }
               }
             }
-      Role: !GetAtt StepFunctionExecutionRole.Arn
+      RoleArn: !GetAtt StepFunctionExecutionRole.Arn
 
   # EventBridge Rule for Scheduled Trigger
   ScheduledRule:
@@ -57,9 +57,30 @@ Resources:
       ScheduleExpression: "cron(0 21 ? 10-3 FRI *)"
       State: ENABLED
       Targets:
-        - Arn: !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:StepFunction"
+        - Arn: !GetAtt StepFunction.Arn
           Id: StepFunctionTarget
-          RoleArn: !GetAtt StepFunctionExecutionRole.Arn
+
+  # EventBridge execution role
+  EventBridgeInvokeStepFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "events.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        - PolicyName: "InvokeStepFunction"
+          PolicyDocument:
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "states:StartExecution"
+                Resource: !GetAtt StepFunction.Arn
 
   # Step Function Execution Role
   StepFunctionExecutionRole:
@@ -72,6 +93,7 @@ Resources:
             Principal:
               Service:
                 - "states.amazonaws.com"
+                - "events.amazonaws.com"
             Action:
               - "sts:AssumeRole"
       Policies:
