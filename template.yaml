@@ -59,6 +59,7 @@ Resources:
       Targets:
         - Arn: !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:StepFunction"
           Id: StepFunctionTarget
+          RoleArn: !GetAtt StepFunctionExecutionRole.Arn
 
   # Step Function Execution Role
   StepFunctionExecutionRole:
