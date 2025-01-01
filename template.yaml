@@ -104,27 +104,27 @@ Resources:
                 - "lambda.amazonaws.com"
             Action:
               - "sts:AssumeRole"
-    Policies:
-      - PolicyName: "LambdaBasicExecution"
-        PolicyDocument:
-          Statement:
-            - Effect: Allow
-              Action:
-                - logs:CreateLogGroup
-              Resource: arn:aws:logs:ap-southeast-2:920344503634:*
-            - Effect: Allow
-              Action:
-                - logs:CreateLogStream
-                - logs:PutLogEvents
-              Resource:
-                - >-
-                  arn:aws:logs:ap-southeast-2:920344503634:log-group:/aws/lambda/implement-tagging-and-lcp:*
-            - Effect: Allow
-              Action:
-                - s3:ListBucket
-                - s3:ListAllMyBuckets
-                - s3:GetBucketTagging
-                - s3:PutBucketTagging
-                - s3:PutObject
-                - s3:PutLifecycleConfiguration
-              Resource: '*'
+      Policies:
+        - PolicyName: "LambdaBasicExecution"
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                Resource: arn:aws:logs:ap-southeast-2:920344503634:*
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - >-
+                    arn:aws:logs:ap-southeast-2:920344503634:log-group:/aws/lambda/implement-tagging-and-lcp:*
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:ListAllMyBuckets
+                  - s3:GetBucketTagging
+                  - s3:PutBucketTagging
+                  - s3:PutObject
+                  - s3:PutLifecycleConfiguration
+                Resource: '*'
