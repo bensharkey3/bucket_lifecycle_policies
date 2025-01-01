@@ -2,25 +2,112 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: An AWS Serverless Application Model template describing your function.
 Resources:
+
+  # First Lambda Function
   implementtaggingandlcp:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./src
-      Description: ''
-      MemorySize: 128
       Timeout: 600
       Handler: implement_tagging_and_lcp.lambda_handler
       Runtime: python3.12
-      Architectures:
-        - x86_64
-      EphemeralStorage:
-        Size: 512
       EventInvokeConfig:
         MaximumEventAgeInSeconds: 21600
         MaximumRetryAttempts: 2
       PackageType: Zip
+      Role: !GetAtt LambdaExecutionRole.Arn
+
+  # Second Lambda Function
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src
+      Timeout: 600
+      Handler: hello_world.lambda_handler
+      Runtime: python3.12
+
+  # Step Function
+  StepFunction:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Definition:
+        Fn::Sub:
+          |
+            {
+              "StartAt": "FirstLambdaStep",
+              "States": {
+                "FirstLambdaStep": {
+                  "Type": "Task",
+                  "Resource": "${implementtaggingandlcp.Arn}",
+                  "Next": "SecondLambdaStep"
+                },
+                "SecondLambdaStep": {
+                  "Type": "Task",
+                  "Resource": "${HelloWorldFunction.Arn}",
+                  "End": true
+                }
+              }
+            }
+      Role: !GetAtt StepFunctionExecutionRole.Arn
+
+  # EventBridge Rule for Scheduled Trigger
+  ScheduledRule:
+    Type: AWS::Events::Rule
+    Properties:
+      ScheduleExpression: "cron(0 21 ? 10-3 FRI *)"
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt StepFunction.Arn
+          Id: StepFunctionTarget
+
+  # Step Function Execution Role
+  StepFunctionExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "states.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
       Policies:
-        - Statement:
+        - PolicyName: "StepFunctionLambdaInvoke"
+          PolicyDocument:
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "lambda:InvokeFunction"
+                Resource:
+                  - !GetAtt implementtaggingandlcp.Arn
+                  - !GetAtt HelloWorldFunction.Arn
+        - PolicyName: "StepFunctionTriggerPolicy"
+          PolicyDocument:
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "states:StartExecution"
+                Resource: !GetAtt StepFunction.Arn
+
+  # Lambda Execution Role
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+    Policies:
+      - PolicyName: "LambdaBasicExecution"
+        PolicyDocument:
+          Statement:
             - Effect: Allow
               Action:
                 - logs:CreateLogGroup
@@ -41,17 +128,3 @@ Resources:
                 - s3:PutObject
                 - s3:PutLifecycleConfiguration
               Resource: '*'
-      RecursiveLoop: Terminate
-      SnapStart:
-        ApplyOn: None
-      Events:
-        Schedule1:
-          Type: Schedule
-          Properties:
-            Schedule: cron(0 21 ? 10-3 FRI *)
-        Schedule2:
-          Type: Schedule
-          Properties:
-            Schedule: cron(0 22 ? 4-9 FRI *)
-      RuntimeManagementConfig:
-        UpdateRuntimeOn: Auto
