@@ -28,9 +28,9 @@ Resources:
 
   # Step Function
   StepFunction:
-    Type: AWS::Serverless::StateMachine
+    Type: AWS::StepFunctions::StateMachine
     Properties:
-      Definition:
+      DefinitionString:
         Fn::Sub:
           |
             {
@@ -56,9 +56,11 @@ Resources:
     Properties:
       ScheduleExpression: "cron(0 21 ? 10-3 FRI *)"
       State: ENABLED
+      RoleArn: !GetAtt EventBridgeInvokeStepFunctionRole.Arn
       Targets:
         - Arn: !GetAtt StepFunction.Arn
           Id: StepFunctionTarget
+          RoleArn: !GetAtt StepFunctionExecutionRole.Arn
 
   # EventBridge execution role
   EventBridgeInvokeStepFunctionRole:
